@@ -17,13 +17,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @SpringBootApplication
 @RestController
 public class GatewayUserApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(GatewayUserApplication.class, args);
     }
 
     ConcurrentHashMap<String, AtomicInteger> map = new ConcurrentHashMap<>();
-
     Log log = LogFactory.getLog(getClass());
 
     @GetMapping("/test")

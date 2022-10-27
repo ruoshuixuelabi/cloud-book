@@ -5,7 +5,6 @@ import com.blueskykong.gateway.server.ThrottleGatewayFilterFactory;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
@@ -42,19 +41,25 @@ public class RouteConfiguration {
                                 f.addResponseHeader("X-TestHeader", "foobar"))
                         .uri("http://httpbin.org:80")
                 )
+                /*
+                 * 网关经常需要对路由请求进行过滤，对符合条件的请求进行一些操作，
+                 * 如增加请求头、增加请求参数、增加响应头和断路器等功能。例如下面的示例代码
+                 * 代码实现了当请求路径为/image/webp时，网关将请求转发到 [http://httpbin.org ](http://httpbin.org/)，
+                 * 并对响应进行过滤处理，增加响应的头部X-AnotherHeader：baz。
+                 */
                 .route(r -> r.path("/image/webp")
                         .filters(f ->
                                 f.addResponseHeader("X-AnotherHeader", "baz"))
                         .uri("http://httpbin.org:80")
                 ).route("read_body_pred", r -> r.path("/test10/test2").and().readBody(String.class,
-                        s -> {
-                            JsonObject jsonObject = (JsonObject) new Gson().fromJson(s, JsonObject.class);
-                            jsonObject.entrySet().size();
-                            String val = jsonObject.get("key").getAsString();
+                                        s -> {
+                                            JsonObject jsonObject = (JsonObject) new Gson().fromJson(s, JsonObject.class);
+                                            jsonObject.entrySet().size();
+                                            String val = jsonObject.get("key").getAsString();
 
-                            return val.equalsIgnoreCase("hello");
+                                            return val.equalsIgnoreCase("hello");
 //                            return s.get("key").getAsString().equals("hello");
-                        }).filters(f -> f.addResponseHeader("X-TestHeader", "read_body_pred"))
+                                        }).filters(f -> f.addResponseHeader("X-TestHeader", "read_body_pred"))
                                 .uri("http://httpbin.org")
                 ).route("modify_request_body", r -> r.path("/modify/test2")
                         .filters(f -> f.addRequestHeader("X-TestHeader", "rewrite_request_upper")
@@ -63,10 +68,9 @@ public class RouteConfiguration {
                                         (exchange, s) -> Mono.just("12345"))
                         ).uri("http://localhost:8005/body")
                 )
-                .route(r -> r.order(-1)
+                .route("ThrottleGatewayFilterFactory_test", r -> r.order(-1)
                         .path("/test40/**").filters(f -> f.stripPrefix(2).filter(new ThrottleGatewayFilterFactory(1, 1, 5, TimeUnit.SECONDS)))
                         .uri("http://baidu.com")
-                        .id("ThrottleGatewayFilterFactory_test")
                 ).route(r -> r.path("/test5/**").and().header("X-Next-Url", ".+")
                         .filters(f -> f.requestHeaderToRequestUri("X-Next-Url"))
                         .uri("http://baidu.com"))
@@ -74,15 +78,21 @@ public class RouteConfiguration {
                         .filters(f -> f.changeRequestUri(e -> Optional.of(URI.create(
                                 e.getRequest().getQueryParams().getFirst("url")))))
                         .uri("http://example.com"))
-                .route(r -> r.path("/customer/**")
+//                .route(r -> r.path("/customer/**")
+//                        .filters(f -> f.stripPrefix(2)
+//                                .filter(new RateLimitByIpGatewayFilter(10, 1, Duration.ofSeconds(1))))
+//                        .uri("http://baidu.com")
+//                        .order(0)
+//                        .id("throttle_customer_service"))
+                .route("throttle_customer_service", r -> r.order(0).path("/customer/**")
                         .filters(f -> f.stripPrefix(2)
                                 .filter(new RateLimitByIpGatewayFilter(10, 1, Duration.ofSeconds(1))))
                         .uri("http://baidu.com")
-                        .order(0)
-                        .id("throttle_customer_service"))
+                )
                 .build();
         //@formatter:on
     }
+
 
     @Bean
     public RouteLocator routeLocator(RouteLocatorBuilder builder) {
@@ -105,11 +115,11 @@ public class RouteConfiguration {
         return route;
     }
 
-    @Bean
-    public KeyResolver userKeyResolver() {
-        return exchange -> Mono.just(exchange.getRequest().getQueryParams().getFirst("user"));
-    }
-
+    //    @Bean
+//    public KeyResolver userKeyResolver() {
+//        return exchange -> Mono.just(exchange.getRequest().getQueryParams().getFirst("user"));
+//    }
+//
     @Bean(name = RemoteAddrKeyResolver.BEAN_NAME)
     public RemoteAddrKeyResolver remoteAddrKeyResolver() {
         return new RemoteAddrKeyResolver();

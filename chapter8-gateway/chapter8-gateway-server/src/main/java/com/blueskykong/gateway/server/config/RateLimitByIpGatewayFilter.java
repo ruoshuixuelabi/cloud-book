@@ -30,11 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RateLimitByIpGatewayFilter implements GatewayFilter, Ordered {
-
     int capacity;
     int refillTokens;
     Duration refillDuration;
-
     private static final Map<String, Bucket> CACHE = new ConcurrentHashMap<>();
 
     private Bucket createNewBucket() {
@@ -50,7 +48,6 @@ public class RateLimitByIpGatewayFilter implements GatewayFilter, Ordered {
         // }
         String ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
         Bucket bucket = CACHE.computeIfAbsent(ip, k -> createNewBucket());
-
         log.debug("IP: " + ip + "，TokenBucket Available Tokens: " + bucket.getAvailableTokens());
         if (bucket.tryConsume(1)) {
             return chain.filter(exchange);
@@ -64,5 +61,4 @@ public class RateLimitByIpGatewayFilter implements GatewayFilter, Ordered {
     public int getOrder() {
         return -1000;
     }
-
 }

@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.blueskykong</groupId>
     <artifactId>cloud-book</artifactId>
     <packaging>pom</packaging>
@@ -21,5 +20,7 @@
         <module>chapter11-bus</module>
         <module>chapter12-cloud-security</module>
         <module>chapter13-sleuth</module>
+        <module>new_chapter4-eureka</module>
+        <module>new_chapter5-openFeign</module>
     </modules>
 </project>

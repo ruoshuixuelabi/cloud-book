@@ -16,5 +16,4 @@ public class RemoteAddrKeyResolver implements KeyResolver {
         System.out.println(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
         return Mono.just(exchange.getRequest().getRemoteAddress().getAddress().getHostAddress());
     }
-
 }

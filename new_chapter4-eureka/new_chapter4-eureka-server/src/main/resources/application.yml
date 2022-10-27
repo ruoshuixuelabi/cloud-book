@@ -1,0 +1,21 @@
+server:
+  port: 8761
+eureka:
+  instance:
+    #InstanceId是Eureka服务的唯一标记，主要用于区分同一服务集群的不同实例
+    instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    hostname: localhost
+  client:
+    #表明该服务不会向Eureka Server注册自己的信息
+    register-with-eureka: false
+    # 表明该服务不会向Eureka Server获取注册信息
+    fetch-registry: false
+    # Eureka Server注册中心的地址，用于client与server进行交流
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+spring:
+  application:
+    name: eureka-service
+info:
+  app:
+    name: Eureka-Server
