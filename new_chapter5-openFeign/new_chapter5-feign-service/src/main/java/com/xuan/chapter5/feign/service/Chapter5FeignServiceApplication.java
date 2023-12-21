@@ -9,7 +9,6 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 @EnableEurekaServer
 @EnableEurekaClient
 public class Chapter5FeignServiceApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(Chapter5FeignServiceApplication.class, args);
     }
